@@ -65,8 +65,7 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
 
     public void popViewController() {
         activeViewController.onViewControllerDestroyed();
-        history.removeFirst();
-
+        
         try {
             this.navigateToViewController((ViewController) history.pop().newInstance());
         } catch(InstantiationException ex) {
