@@ -63,18 +63,35 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
         activeViewController.getView().startAnimation(animIn);
     }
 
+    public void popNavigateToViewController(ViewController vc) {
+        history.removeFirst();
+        navigateToViewController(vc);
+    }
+
+    public void popNavigateToViewController(ViewController vc, int transition_out, int transition_in) {
+        history.removeFirst();
+        navigateToViewController(vc, transition_out, transition_in);
+    }
+
     public void popViewController() {
         activeViewController.onViewControllerDestroyed();
         history.removeFirst();
 
         try {
-            this.navigateToViewController((ViewController) history.pop().newInstance());
+            this.navigateToViewController(
+                    (ViewController) history.pop()
+                            .asSubclass(ViewController.class)
+                            .getDeclaredConstructor(SingleActivity.class)
+                            .newInstance(this)
+            );
         } catch(InstantiationException ex) {
             Log.e(SAA, "Error Instantiation ViewController Object on Pop", ex);
         } catch(IllegalAccessException ex) {
             Log.e(SAA, "Error Accessing ViewController Class on Pop", ex);
         } catch(ClassCastException ex) {
             Log.e(SAA, "Error Casting Object to ViewController on Pop", ex);
+        } catch(Exception ex) {
+            Log.e(SAA, "General Exception in ViewController on Pop", ex);
         }
     }
 

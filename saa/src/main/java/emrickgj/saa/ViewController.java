@@ -25,11 +25,23 @@ public abstract class ViewController {
 
     public View getView() { return this.view; }
 
+    public void popViewController() {
+        context.popViewController();
+    }
+
     public void navigate(ViewController vc) {
         context.navigateToViewController(vc);
     }
 
-    public void popViewController() {
-        context.popViewController();
+    public void navigate(ViewController vc, int transition_out, int transition_in) {
+        context.navigateToViewController(vc, transition_out, transition_in);
+    }
+
+    public void popNavigate(ViewController vc) {
+        context.popNavigateToViewController(vc);
+    }
+
+    public void popNavigateViewController(ViewController vc, int transition_out, int transition_in) {
+        context.popNavigateToViewController(vc, transition_out, transition_in);
     }
 }
