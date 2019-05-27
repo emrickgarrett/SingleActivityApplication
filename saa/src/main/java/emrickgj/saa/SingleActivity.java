@@ -75,10 +75,11 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
 
     public void popViewController() {
         activeViewController.onViewControllerDestroyed();
+        history.removeFirst();
         
         try {
             this.navigateToViewController(
-                    (ViewController) history.pop()
+                    (ViewController) history.getFirst()
                             .asSubclass(ViewController.class)
                             .getDeclaredConstructor(SingleActivity.class)
                             .newInstance(this)
@@ -142,5 +143,13 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         activityManager.getMemoryInfo(memoryInfo);
         return memoryInfo;
+    }
+
+    protected ViewController getActiveViewController() {
+        return this.activeViewController;
+    }
+
+    protected ViewGroup getContainer() {
+        return this.container;
     }
 }
