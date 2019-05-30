@@ -33,9 +33,19 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
     }
 
     public void navigateToViewController(ViewController vc) {
+        this.navigateToViewController(vc, true);
+    }
+
+    public void navigateToViewController(ViewController vc, int transition_in, int transition_out) {
+        this.navigateToViewController(vc, true, transition_in, transition_out);
+    }
+
+    protected void navigateToViewController(ViewController vc, boolean shouldAddToHistory) {
         container.removeAllViews();
         container.addView(vc.getView());
-        history.addFirst(vc.getClass());
+        if(shouldAddToHistory) {
+            history.addFirst(vc.getClass());
+        }
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         layoutParams.weight = 1;
@@ -45,13 +55,13 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
         activeViewController.onViewControllerLoaded();
     }
 
-    public void navigateToViewController(final ViewController vc, int transition_out, int transition_in) {
+    protected void navigateToViewController(final ViewController vc, final boolean shouldAddToHistory, int transition_out, int transition_in) {
         Animation animIn = AnimationUtils.loadAnimation(this, transition_out);
         Animation animOut = AnimationUtils.loadAnimation(this, transition_in);
         animOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation animation) {
-                navigateToViewController(vc);
+                navigateToViewController(vc, shouldAddToHistory);
             }
 
             @Override
@@ -64,25 +74,25 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
     }
 
     public void popNavigateToViewController(ViewController vc) {
-        history.removeFirst();
-        navigateToViewController(vc);
+        this.pop();
+        navigateToViewController(vc, false);
     }
 
     public void popNavigateToViewController(ViewController vc, int transition_out, int transition_in) {
-        history.removeFirst();
-        navigateToViewController(vc, transition_out, transition_in);
+        this.pop();
+        navigateToViewController(vc, false, transition_out, transition_in);
     }
 
     public void popViewController() {
-        activeViewController.onViewControllerDestroyed();
-        history.removeFirst();
+        this.pop();
         
         try {
             this.navigateToViewController(
                     (ViewController) history.getFirst()
                             .asSubclass(ViewController.class)
                             .getDeclaredConstructor(SingleActivity.class)
-                            .newInstance(this)
+                            .newInstance(this),
+                    false
             );
         } catch(InstantiationException ex) {
             Log.e(SAA, "Error Instantiation ViewController Object on Pop", ex);
@@ -93,6 +103,31 @@ public abstract class SingleActivity extends AppCompatActivity implements Compon
         } catch(Exception ex) {
             Log.e(SAA, "General Exception in ViewController on Pop", ex);
         }
+    }
+
+    private void pop() {
+        if(this.activeViewController != null) {
+            activeViewController.onViewControllerDestroyed();
+        }
+        if(this.history.size() != 0) {
+            history.removeFirst();
+        }
+    }
+
+    public void flushNavigateToViewController(ViewController vc) {
+        if(this.activeViewController != null) {
+            this.activeViewController.onViewControllerDestroyed();
+        }
+        this.history.clear();
+        this.navigateToViewController(vc);
+    }
+
+    public void flushNavigateToViewController(ViewController vc, int transition_in, int transition_out) {
+        if(this.activeViewController != null) {
+            this.activeViewController.onViewControllerDestroyed();
+        }
+        this.history.clear();
+        this.navigateToViewController(vc, transition_in, transition_out);
     }
 
     @Override
